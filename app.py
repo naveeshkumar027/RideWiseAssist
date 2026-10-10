@@ -661,6 +661,10 @@ if question:
                 )
 
             st.markdown(answer)
+            
+            with st.expander("View Supporting Policy Evidence"):
+                evidence = find_relevant_policies(question, load_policies())
+                st.markdown(evidence)
 
     st.session_state.messages.append(
         {
