@@ -628,9 +628,39 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 
+
+if not st.session_state.messages:
+    st.markdown("### Try asking")
+
+    suggestions = [
+        "Why was I charged a late-return fee?",
+        "What is my cancellation refund eligibility?",
+        "Explain my payment history.",
+    ]
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        if st.button("Late-return fee", use_container_width=True):
+            st.session_state.suggested_question = suggestions[0]
+
+    with col2:
+        if st.button("Refund eligibility", use_container_width=True):
+            st.session_state.suggested_question = suggestions[1]
+
+    with col3:
+        if st.button("Payment history", use_container_width=True):
+            st.session_state.suggested_question = suggestions[2]
+
 question = st.chat_input(
     "Ask about bookings, payments, or rental policies"
 )
+
+if not question and st.session_state.get("suggested_question"):
+    question = st.session_state.pop("suggested_question")
+
+    "Ask about bookings, payments, or rental policies"
+
 
 if question:
     st.session_state.messages.append(
@@ -661,7 +691,7 @@ if question:
                 )
 
             st.markdown(answer)
-            
+
             with st.expander("View Supporting Policy Evidence"):
                 evidence = find_relevant_policies(question, load_policies())
                 st.markdown(evidence)
