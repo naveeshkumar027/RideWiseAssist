@@ -324,6 +324,19 @@ def find_relevant_policies(question, documents, limit=7):
         selected_documents.append(document)
 
     # First, force the tier annexure into context for tier-related late returns.
+    
+    # Include all pages of both refund policy versions for comparison.
+    asks_about_refund = any(
+        term in question_lower
+        for term in ("cancel", "cancellation", "refund", "refunded")
+    )
+
+    if asks_about_refund:
+        for document in documents:
+            policy_name = document["name"].lower()
+            if "cancellation" in policy_name and "refund" in policy_name:
+                add_document(document)
+
     if asks_about_lateness and asks_about_tiers_or_grace:
         for score, document, is_tier_annexure in ranked:
             if is_tier_annexure:
@@ -428,22 +441,62 @@ For late returns:
 - Show the calculation and cite the policy document, version, page, and
   clause or annexure when that information is present in the extracts.
 
+
 4. POLICY VERSIONS
-Policy files may contain different versions. Check the applicable version
-and the booking date before making a policy decision. Use the effective
-date and any version applicability conditions in the supplied policy text.
-If the applicable version cannot be determined, clearly explain that
-limitation rather than silently selecting a version.
+
+When answering cancellation or refund questions, compare the
+effective dates and booking-date applicability conditions in
+all retrieved cancellation and refund policy versions.
+
+Use the booking's booked_at timestamp from the database to
+determine which version applies. Do not confuse the booking
+date with the scheduled pickup date or cancellation date.
+
+For example, if a policy version applies to bookings made
+before 1 July 2026 and another applies to bookings made on
+or after 1 July 2026, a booking made on 1 October 2026
+must use the latter version, provided the retrieved policy
+text confirms those applicability dates.
+
+If the booking date, policy applicability conditions, or
+required cancellation details are missing or contradictory,
+explain the uncertainty instead of guessing.
+
+Never claim that a cancellation, support ticket, or refund
+has been completed unless the database or an implemented
+application function confirms that action.
+
 
 5. FACTS VERSUS CALCULATIONS
 Distinguish recorded facts from policy rules and your own calculations.
 Use the booking timestamps and customer tier supplied in the database.
 If required facts are missing or conflicting, state what is missing.
 
+
 6. PAYMENTS AND REFUNDS
-Never claim that a refund was processed unless the records support it.
-A negative payment amount may represent a refund, but explain its recorded
-status accurately. Do not confuse a refund amount with a completed refund.
+
+Never claim that a refund was processed unless the records
+support it. A negative payment amount may represent a refund,
+but explain its recorded status accurately.
+
+This application is read-only. It cannot cancel bookings,
+create support tickets, change booking statuses, initiate
+refunds, or guarantee automatic refund processing.
+
+Never tell a user that you have performed any of these
+actions. Do not promise that another system will perform
+them automatically unless the supplied records or policy
+explicitly establish that process.
+
+When a cancellation is not recorded, explain that the
+booking remains uncancelled in the available records.
+Recommend using the official cancellation process and
+checking with the authorized support team if needed.
+
+If a policy threshold is unreadable or unavailable, state
+that it could not be verified. Never guess missing refund
+thresholds or eligibility rules.
+
 
 7. PRIVACY AND ACCESS
 The user is a {role}. Follow the access context below. Never disclose
